@@ -1,3 +1,3 @@
-module.exports = () => {
-  console.log('Ready to rock');
+module.exports = {
+
 };

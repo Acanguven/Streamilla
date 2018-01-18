@@ -2,5 +2,6 @@ language: node_js
 node_js:
   - "8"
 cache: yarn
-after_success:
-  - yarn coveralls
+script:
+  - istanbul cover ./node_modules/mocha/bin/_mocha --reporter lcovonly -- -R spec
+  - codecov

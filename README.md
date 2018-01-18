@@ -2,7 +2,7 @@
 [![codecov](https://codecov.io/gh/Acanguven/Milla/branch/master/graph/badge.svg)](https://codecov.io/gh/Acanguven/Milla)
 [![npm version](https://badge.fury.io/js/milla.svg)](https://www.npmjs.com/package/milla)
 
-##### This project is in under development
+##### This project is under development
 
 ___
 

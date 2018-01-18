@@ -14,5 +14,8 @@
   },
   "scripts": {
     "test": "mocha"
+  },
+  "dependencies": {
+    "htmlparser2": "^3.9.2"
   }
 }

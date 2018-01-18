@@ -3,3 +3,5 @@ node_js:
   - "node"
   - "8"
 cache: yarn
+after_success:
+  - coveralls

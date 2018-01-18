@@ -1,7 +1,9 @@
-const millaConfiguration = require('./configuration');
+const config = require('./configuration');
 const render = require('./render');
+const express = require('./express');
 
 module.exports = {
-  configuration: millaConfiguration,
-  render
+  config,
+  render,
+  express
 };

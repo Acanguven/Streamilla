@@ -7,10 +7,14 @@ describe('Module', () => {
   });
 
   it('should export configuration', () => {
-    expect(Milla.configuration).to.be.an('object');
+    expect(Milla.config).to.be.an('object');
   });
 
   it('should export render', () => {
     expect(Milla.render).to.be.an('function');
+  });
+
+  it('should export express middleware', () => {
+    expect(Milla.express).to.be.an('function');
   });
 });

@@ -10,8 +10,8 @@ describe('Module', () => {
     expect(Milla.config).to.be.an('object');
   });
 
-  it('should export render', () => {
-    expect(Milla.render).to.be.an('function');
+  it('should export page', () => {
+    expect(Milla.page).to.be.an('function');
   });
 
   it('should export express middleware', () => {

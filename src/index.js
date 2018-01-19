@@ -1,9 +1,9 @@
 const config = require('./configuration');
-const render = require('./render');
+const page = require('./page');
 const express = require('./express');
 
 module.exports = {
   config,
-  render,
+  page,
   express
 };

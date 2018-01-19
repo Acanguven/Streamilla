@@ -1,4 +1,5 @@
 const expect = require('chai').expect;
+const Milla = require('../src');
 const MillaPage = require('../src/page');
 const path = require('path');
 const ENUMS = require('../src/enums');
@@ -55,5 +56,25 @@ describe('Page', () => {
     });
 
     expect(page.html).to.equal('<html></html>');
+  });
+
+  it('should create first flush string without fragment', () => {
+    const page = new MillaPage({
+      htmlFile: path.join(__dirname, './test2.html')
+    });
+
+    expect(page.pageContent.firstFlush).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title></head><body></body></html>');
+  });
+
+  it('should create first flush string with fragments', () => {
+    Milla.config.set({
+      fragmentTag: 'fragment'
+    });
+
+    const page = new MillaPage({
+      htmlFile: path.join(__dirname, './test3.html')
+    });
+
+    expect(page.pageContent.firstFlush).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title></head><body><div>Some Content</div><fragment name="header"/></body></html>');
   });
 });

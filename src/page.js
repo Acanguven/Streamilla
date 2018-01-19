@@ -25,31 +25,44 @@ const createAttributes = attributesObject => {
 };
 
 const createFragmentObject = fragmentNode => {
-  return {
-    ...fragmentNode.attribs
+  const fragmentObject = {};
+  for (let prop in fragmentNode) {
+    fragmentObject[prop] = fragmentNode[prop];
   }
+  return fragmentObject;
 };
 
 const parseHtmlSiblings = siblings => {
   let htmlString = '';
   let fragments = [];
 
+
   for (let x = 0, len = siblings.length; x < len; x++) {
     const node = siblings[x];
     switch (node.type) {
       case ENUMS.HTML_ELEMENT_TYPES.TAG:
-        if(node.name === config.fragmentTag){
-          fragments.push(createFragmentObject(node));
-          console.log(fragments);
-        }else{
-          const isSelfClosingTag = isSelfClosing(node.name);
-          htmlString += `<${node.name}${createAttributes(node.attribs)}${isSelfClosingTag ? '/' : ''}>`;
-          if (node.children) htmlString += parseHtmlSiblings(node.children);
-          if (!isSelfClosingTag) htmlString += `</${node.name}>`;
+        switch (node.name) {
+          case config.fragmentTag:
+            const fragmentExpression = `{__fp|${fragments.length}}`;
+            fragments.push(createFragmentObject(node, fragmentExpression));
+            htmlString += fragmentExpression;
+            break;
+          case config.headTag:
+            htmlString += `{__milla-head}`;
+            break;
+          case config.bodyTag:
+            htmlString += `{__milla-body}`;
+            break;
+          default:
+            const isSelfClosingTag = isSelfClosing(node.name);
+            htmlString += `<${node.name}${createAttributes(node.attribs)}${isSelfClosingTag ? '/' : ''}>`;
+            if (node.children) htmlString += parseHtmlSiblings(node.children);
+            if (!isSelfClosingTag) htmlString += `</${node.name}>`;
+            break;
         }
         break;
       case ENUMS.HTML_ELEMENT_TYPES.DIRECTIVE:
-        if(node.data) htmlString += `<${node.data}>`;
+        if (node.data) htmlString += `<${node.data}>`;
         break;
       case ENUMS.HTML_ELEMENT_TYPES.TEXT:
         if (!isEmpty(node.data)) htmlString += node.data.trim();

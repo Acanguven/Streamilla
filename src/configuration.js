@@ -1,6 +1,11 @@
 const DEFAULT_CONFIGURATION = {
   fragmentTag: 'fragment',
-  selfClosingTags: ['meta']
+  selfClosingTags: ['meta'],
+  placeholderIdPrefix: 'c_',
+  contentIdPrefix: 'p_',
+  hideAttribute: 'p',
+  headTag: 'milla-head',
+  bodyTag: 'milla-body'
 };
 
 class Configuration {

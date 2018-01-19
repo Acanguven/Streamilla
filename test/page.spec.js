@@ -75,6 +75,18 @@ describe('Page', () => {
       htmlFile: path.join(__dirname, './test3.html')
     });
 
-    expect(page.pageContent.firstFlush).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title></head><body><div>Some Content</div><fragment name="header"/></body></html>');
+    expect(page.pageContent.firstFlush).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}{__milla-body}</body></html>');
+  });
+
+  it('should create first flush string with multiple fragments', () => {
+    Milla.config.set({
+      fragmentTag: 'fragment'
+    });
+
+    const page = new MillaPage({
+      htmlFile: path.join(__dirname, './test4.html')
+    });
+
+    expect(page.pageContent.firstFlush).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}<div>Middle Content</div>{__fp|1}{__milla-body}</body></html>');
   });
 });

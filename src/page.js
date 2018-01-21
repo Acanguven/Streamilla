@@ -2,6 +2,7 @@ const config = require('./configuration');
 const htmlparser2 = require('htmlparser2');
 const ENUMS = require('./enums');
 const fs = require('fs');
+const path = require('path');
 
 /**
  * Page Configuration
@@ -26,16 +27,15 @@ const createAttributes = attributesObject => {
 
 const createFragmentObject = fragmentNode => {
   const fragmentObject = {};
-  for (let prop in fragmentNode) {
-    fragmentObject[prop] = fragmentNode[prop];
+  for (let prop in fragmentNode.attribs) {
+    fragmentObject[prop] = fragmentNode.attribs[prop];
   }
   return fragmentObject;
 };
 
-const parseHtmlSiblings = siblings => {
+const parseHtmlSiblings = (siblings, fragmentLength = 0) => {
   let htmlString = '';
   let fragments = [];
-
 
   for (let x = 0, len = siblings.length; x < len; x++) {
     const node = siblings[x];
@@ -43,7 +43,7 @@ const parseHtmlSiblings = siblings => {
       case ENUMS.HTML_ELEMENT_TYPES.TAG:
         switch (node.name) {
           case config.fragmentTag:
-            const fragmentExpression = `{__fp|${fragments.length}}`;
+            const fragmentExpression = `{__fp|${fragmentLength++}}`;
             fragments.push(createFragmentObject(node, fragmentExpression));
             htmlString += fragmentExpression;
             break;
@@ -56,7 +56,11 @@ const parseHtmlSiblings = siblings => {
           default:
             const isSelfClosingTag = isSelfClosing(node.name);
             htmlString += `<${node.name}${createAttributes(node.attribs)}${isSelfClosingTag ? '/' : ''}>`;
-            if (node.children) htmlString += parseHtmlSiblings(node.children);
+            if (node.children){
+              const childrenData = parseHtmlSiblings(node.children, fragmentLength);
+              htmlString += childrenData[0];
+              fragments = fragments.concat(childrenData[1]);
+            }
             if (!isSelfClosingTag) htmlString += `</${node.name}>`;
             break;
         }
@@ -70,22 +74,33 @@ const parseHtmlSiblings = siblings => {
     }
   }
 
-  return htmlString;
+  return [htmlString, fragments];
 };
 
 class MillaPage {
   constructor(pageConfiguration) {
     this.html = '';
     this.pageContent = {
-      firstFlush: ''
+      fragmentedHtml: '',
+      firstFlush: '',
+      fragments: [],
+      data: {},
     };
+    this.dependencies = {};
 
     this.loadConfiguration(pageConfiguration);
+
     this.parseHtml();
+    this.loadDependencies();
+    this.buildFirstFlush();
   }
 
   loadConfiguration(pageConfiguration) {
     if (typeof pageConfiguration !== 'object') throw ENUMS.ERRORS.MISSING_PAGE_CONFIGURATION;
+
+    /**
+     * Check page file
+     */
     if (typeof pageConfiguration.htmlFile !== 'string') {
       if (typeof pageConfiguration.html !== 'string') {
         throw ENUMS.ERRORS.MISSING_RENDER_FILE;
@@ -94,6 +109,14 @@ class MillaPage {
       }
     } else {
       this.loadFromFile(pageConfiguration.htmlFile);
+    }
+
+
+    /**
+     * Set page data
+     */
+    if(pageConfiguration.data){
+      this.pageContent.data = pageConfiguration.data;
     }
   }
 
@@ -109,7 +132,27 @@ class MillaPage {
   parseHtml() {
     const htmlDomTree = htmlparser2.parseDOM(this.html);
     const htmlData = parseHtmlSiblings(htmlDomTree);
-    this.pageContent.firstFlush = htmlData;
+    this.pageContent.fragmentedHtml = htmlData[0];
+    this.pageContent.fragments = htmlData[1];
+  }
+
+  buildFirstFlush() {
+
+  }
+
+  loadDependencies() {
+    this.pageContent.fragments.forEach(fragment => {
+      ['css','js'].forEach(fileType => {
+        if(!fragment[fileType]) return;
+        const filePath = path.join(__dirname, fragment[fileType]);
+        if(!this.dependencies[filePath]){
+          this.dependencies[filePath] =  {
+            code: fs.readFileSync(filePath, 'utf8').trim(),
+            type: fileType
+          };
+        }
+      })
+    });
   }
 }
 

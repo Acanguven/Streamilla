@@ -1,6 +1,6 @@
 {
   "name": "milla",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Streaming layout service for progressive rendering",
   "main": "index.js",
   "repository": "https://github.com/Acanguven/Milla.git",

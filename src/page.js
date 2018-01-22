@@ -8,6 +8,7 @@ const path = require('path');
  * Page Configuration
  * htmlFile {string} - path of html file (if exists htmlString won't be evaluated)
  * html {string} - html file as string
+ * data {object} - component resolvers: {} | () => {} | () => new Promise()
  */
 
 const isEmpty = (s) => {
@@ -142,12 +143,18 @@ class MillaPage {
 
   loadDependencies() {
     this.pageContent.fragments.forEach(fragment => {
-      ['css','js'].forEach(fileType => {
+      Object.values(ENUMS.KNOWN_DEPENDENCY_EXTENSIONS).forEach(fileType => {
         if(!fragment[fileType]) return;
         const filePath = path.join(__dirname, fragment[fileType]);
-        if(!this.dependencies[filePath]){
+        if(!MillaPage.cachedDependencies[filePath]){
+          MillaPage.cachedDependencies[filePath] = fs.readFileSync(filePath, 'utf8').trim();
           this.dependencies[filePath] =  {
-            code: fs.readFileSync(filePath, 'utf8').trim(),
+            code: MillaPage.cachedDependencies[filePath],
+            type: fileType
+          };
+        }else{
+          this.dependencies[filePath] =  {
+            code: MillaPage.cachedDependencies[filePath],
             type: fileType
           };
         }
@@ -155,5 +162,7 @@ class MillaPage {
     });
   }
 }
+
+MillaPage.cachedDependencies = {};
 
 module.exports = MillaPage;

@@ -9,3 +9,8 @@ module.exports.HTML_ELEMENT_TYPES = {
   TAG: 'tag',
   DIRECTIVE: 'directive'
 };
+
+module.exports.KNOWN_DEPENDENCY_EXTENSIONS = {
+  CSS: 'css',
+  JS: 'js'
+};

@@ -42,9 +42,11 @@ Lets assume that our header service responds in 300 ms and product service in 14
     <head>
         <milla-head></milla-head>
     </head>
-    <fragment name="header" css="pathtocss" js="pathtojs"></fragment>
-    <div>A static content</div>
-    <fragment name="product" css="pathtocss" js="pathtojs"></fragment>
+    <body>
+        <fragment name="header" css="pathtocss" js="pathtojs"></fragment>
+        <div>A static content</div>
+        <fragment name="product" css="pathtocss" js="pathtojs"></fragment>
+    </body>
 </html>
 ```
 

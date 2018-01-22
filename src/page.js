@@ -106,10 +106,22 @@ const generateMillaBody = (fragments, dependencies) => {
 
 const generateFragmentsFirstContent = (firstFlush, pageContents, dependencies) => {
   let fragmentsReplacedFirstFlush = firstFlush;
+
+
   pageContents.fragments.forEach(fragment => {
-    const placeholder = fragment.placeholder ? dependencies[path.join(__dirname, fragment.placeholder)].code : '';
-    fragmentsReplacedFirstFlush = fragmentsReplacedFirstFlush.replace(fragment.expression, `<div id="${config.placeholderIdPrefix + fragment.index}">${placeholder}</div>`);
+    if (typeof pageContents.data[fragment.name] === 'object') {
+      const contentRender = pageContents.fragmentMethods[fragment.name].content(pageContents.data[fragment.name]);
+      if (typeof contentRender !== 'string') {
+        throw ENUMS.ERRORS.EXPECTED_SYNC_RENDER_FOR_STATIC_DATA(fragment.name);
+      }
+      fragmentsReplacedFirstFlush = fragmentsReplacedFirstFlush.replace(fragment.expression, `${contentRender}`);
+    } else {
+      const placeholder = fragment.placeholder ? dependencies[path.join(__dirname, fragment.placeholder)].code : '';
+      fragmentsReplacedFirstFlush = fragmentsReplacedFirstFlush.replace(fragment.expression, `<div id="${config.placeholderIdPrefix + fragment.index}">${placeholder}</div>`);
+    }
   });
+
+
   return fragmentsReplacedFirstFlush;
 };
 
@@ -120,6 +132,7 @@ class MillaPage {
       fragmentedHtml: '',
       firstFlush: '',
       fragments: [],
+      fragmentMethods: {},
       data: {},
     };
     this.dependencies = {};
@@ -154,6 +167,10 @@ class MillaPage {
     if (pageConfiguration.data) {
       this.pageContent.data = pageConfiguration.data;
     }
+
+    if (pageConfiguration.fragments) {
+      this.pageContent.fragmentMethods = pageConfiguration.fragments;
+    }
   }
 
   loadFromFile(filePath) {
@@ -180,6 +197,10 @@ class MillaPage {
 
   loadDependencies() {
     this.pageContent.fragments.forEach(fragment => {
+      if (!fragment.name) throw ENUMS.ERRORS.NO_FRAGMENT_NAME;
+      if (!this.pageContent.fragmentMethods[fragment.name]) throw ENUMS.ERRORS.NO_FRAGMENT_RENDER_METHOD_PROVIDED(fragment.name);
+      if (fragment[ENUMS.KNOWN_DEPENDENCY_EXTENSIONS.PLACEHOLDER] && !this.pageContent.data[fragment.name]) throw ENUMS.ERRORS.NO_DATA_FOR_PLACEHOLDER;
+
       Object.values(ENUMS.KNOWN_DEPENDENCY_EXTENSIONS).forEach(fileType => {
         if (!fragment[fileType]) return;
         const filePath = path.join(__dirname, fragment[fileType]);
@@ -209,6 +230,10 @@ class MillaPage {
         };
       })
     });
+  }
+
+  stream(writeCallback, endCallback) {
+    writeCallback(this.pageContent.firstFlush);
   }
 }
 

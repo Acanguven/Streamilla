@@ -72,7 +72,15 @@ describe('Page', () => {
     });
 
     const page = new MillaPage({
-      htmlFile: path.join(__dirname, './html/test3.html')
+      htmlFile: path.join(__dirname, './html/test3.html'),
+      fragments: {
+        header: {
+          placeholder: () => {
+          },
+          content: () => {
+          }
+        }
+      }
     });
 
     expect(page.pageContent.fragmentedHtml).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}{__milla-body}</body></html>');
@@ -80,11 +88,25 @@ describe('Page', () => {
 
   it('should create first flush string with multiple fragments', () => {
     Milla.config.set({
-      fragmentTag: 'fragment'
+      fragmentTag: 'fragment',
     });
 
     const page = new MillaPage({
-      htmlFile: path.join(__dirname, './html/test4.html')
+      htmlFile: path.join(__dirname, './html/test4.html'),
+      fragments: {
+        header: {
+          placeholder: () => {
+          },
+          content: () => {
+          }
+        },
+        menu: {
+          placeholder: () => {
+          },
+          content: () => {
+          }
+        }
+      }
     });
 
     expect(page.pageContent.fragmentedHtml).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}<div>Middle Content</div>{__fp|1}{__milla-body}</body></html>');
@@ -96,7 +118,21 @@ describe('Page', () => {
     });
 
     const page = new MillaPage({
-      htmlFile: path.join(__dirname, './html/test5.html')
+      htmlFile: path.join(__dirname, './html/test5.html'),
+      fragments: {
+        header: {
+          placeholder: () => {
+          },
+          content: () => {
+          }
+        },
+        menu: {
+          placeholder: () => {
+          },
+          content: () => {
+          }
+        }
+      }
     });
 
     expect(page.pageContent.fragmentedHtml).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}<div>Middle Content</div><div><span>{__fp|1}</span></div>{__milla-body}</body></html>');
@@ -109,9 +145,27 @@ describe('Page', () => {
 
     const page = new MillaPage({
       htmlFile: path.join(__dirname, './html/test5.html'),
+      fragments: {
+        header: {
+          placeholder: () => {
+          },
+          content: () => {
+          }
+        },
+        menu: {
+          placeholder: () => {
+          },
+          content: () => {
+          }
+        }
+      }
     });
 
-    expect(page.pageContent.fragments).to.deep.equal([{name: 'header', expression: '{__fp|0}',  index: 0}, {name: 'menu', expression: '{__fp|1}', index: 1}]);
+    expect(page.pageContent.fragments).to.deep.equal([{name: 'header', expression: '{__fp|0}', index: 0}, {
+      name: 'menu',
+      expression: '{__fp|1}',
+      index: 1
+    }]);
   });
 
   it('should store data items', () => {
@@ -119,9 +173,11 @@ describe('Page', () => {
       fragmentTag: 'fragment',
     });
 
-    const productResolver = req => new Promise((resolve, reject) => {});
+    const productResolver = req => new Promise((resolve, reject) => {
+    });
 
-    const staticResolver = req => {};
+    const staticResolver = req => {
+    };
 
     const page = new MillaPage({
       htmlFile: path.join(__dirname, './html/test5.html'),
@@ -130,10 +186,16 @@ describe('Page', () => {
         menu: staticResolver,
         product: productResolver
       },
-      fragment:{
+      fragments: {
         header: {
-          content: '',
-          placeholder: ''
+          content: (data) => '',
+          placeholder: (data) => ''
+        },
+        menu: {
+          placeholder: () => {
+          },
+          content: () => {
+          }
         }
       }
     });
@@ -155,9 +217,28 @@ describe('Page', () => {
         htmlFile: path.join(__dirname, './html/test6.html'),
       });
       done(new Error('Not throwing error'));
-    }catch (e){
+    } catch (e) {
       done();
     }
+  });
+
+  it('should throw error when placeholder provided without data', function (done) {
+    Milla.config.set({
+      fragmentTag: 'fragment',
+    });
+
+    try {
+      const page = new MillaPage({
+        htmlFile: path.join(__dirname, './html/test7.html'),
+      });
+      done(new Error('should throw error'));
+    } catch (e) {
+      done();
+    }
+
+
+    expect(page.stream(writeHandler, () => {
+    }));
   });
 
   it('should cache dependencies', () => {
@@ -166,22 +247,93 @@ describe('Page', () => {
     });
 
     const page = new MillaPage({
-      htmlFile: path.join(__dirname, './html/test7.html'),
+      htmlFile: path.join(__dirname, './html/test8.html'),
+      data: {
+        header: {test: 4},
+        product: {test: 6}
+      },
+      fragments: {
+        header: {
+          placeholder: () => '',
+          content: () => ''
+        },
+        product: {
+          placeholder: () => '',
+          content: () => ''
+        }
+      }
     });
 
     expect(page.dependencies).to.deep.equal({
-      [path.join(__dirname, '../test/dependencies/7.css')]: {
+      [path.join(__dirname, '../test/dependencies/8.css')]: {
         code: '.test{color:red}',
         type: 'css',
       },
-      [path.join(__dirname, '../test/dependencies/7.js')]: {
+      [path.join(__dirname, '../test/dependencies/8.js')]: {
         code: 'console.log("I am alive");',
         type: 'js'
       },
-      [path.join(__dirname, '../test/dependencies/7.html')]: {
+      [path.join(__dirname, '../test/dependencies/8.html')]: {
         code: '<div>Example of placeholder content</div>',
         type: 'placeholder'
       },
     });
+  });
+
+  it('should have stream method', function () {
+    Milla.config.set({
+      fragmentTag: 'fragment',
+    });
+
+    const page = new MillaPage({
+      htmlFile: path.join(__dirname, './html/test8.html'),
+      data: {
+        header: {test: 4},
+        product: {test: 6}
+      },
+      fragments: {
+        header: {
+          placeholder: () => '',
+          content: () => ''
+        },
+        product: {
+          placeholder: () => '',
+          content: () => ''
+        }
+      }
+    });
+
+    expect(page.stream).to.be.a('function');
+  });
+
+  it('should flush first content with static content', function (done) {
+    Milla.config.set({
+      fragmentTag: 'fragment',
+    });
+
+    const page = new MillaPage({
+      htmlFile: path.join(__dirname, './html/test8.html'),
+      data: {
+        header: {test: 4},
+        product: () => {}
+      },
+      fragments: {
+        header: {
+          placeholder: () => '',
+          content: (input) => `test:${input.test}`
+        },
+        product: {
+          placeholder: () => '',
+          content: () => ''
+        }
+      }
+    });
+
+    const writeHandler = (data) => {
+      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body>test:4<div>Middle Content</div><div id="c_1"><div>Example of placeholder content</div></div><script>function __f__header(){console.log("I am alive");};</script></body></html>');
+      done();
+    };
+
+    expect(page.stream(writeHandler, () => {}));
   });
 });

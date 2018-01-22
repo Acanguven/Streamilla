@@ -8,7 +8,66 @@ ___
 
 # Milla - Streaming Layout Service
 
-Milla is a layout service that generates web pages from asynchronous fragments. It is a friendly and **fast** library that helps you optimizing your web pages with progressive rendering.
+Milla is a layout service that generates web pages from asynchronous fragments. It is a friendly and **fast** library that helps you optimizing your web pages with progressive rendering. Milla has built-in integration with ExpressJs.
+
+## Fragments
+
+### What is fragment and what makes it different from components?
+
+We create component because of their reusabilities. We can use them anywhere we want, in a search bar, in a login popup or anything else.
+But fragments are encapsulated modules with specific business. Like an header, product container, footer.
+They are all independent from each other.
+
+### How Milla approaches fragments?
+
+Milla is designed to stream fragments asynchronously to the clients. Without any single XHR from browser, all fragments are delivered to clients when their data is ready. Like single page application but fully server side rendered. So it makes it SEO friendly and great for e-commerce websites.
+Milla shows placeholders on the clients browser while it fetches your data then replaces placeholder with real content.
+
+**You can easily improve your Speed Index**!
+
+### How it works?
+
+*This is not a valid Milla usage, please see usage details below*
+
+Whenever user provides a html to milla, milla converts it to stream friendly format at flushed to user asynchronously.
+
+Lets assume that our header service responds in 300 ms and product service in 140ms.
+
+```html
+<html>
+    <head>
+        <milla-head></milla-head>
+    </head>
+    <fragment name="header" css="pathtocss" js="pathtojs"></fragment>
+    <div>A static content</div>
+    <fragment name="product" css="pathtocss" js="pathtojs"></fragment>
+</html>
+```
+
+Converted:
+```html
+<html>
+    <head>
+        <style>/* Fragment styles */</style>
+        <script>/*Really small milla js. 118bytes*/</script>
+    </head>
+    <div id="p_0"></div>
+    <div>A static content</div>
+    <div id="p_1"></div>
+    ... 140ms
+    <!-- Milla recieved product data and flushed product content and js -->
+    <div id="c_1" hidden></div>
+    <script>/*use head script to change c_1 p_1; run header script */</script>
+    <!-- Product is ready to be used -->
+    ... 160ms
+    <!-- Milla recieved header data and flushed product content and js -->
+    <div id="c_1" hidden></div>
+    <script>/*use head script to change c_1 p_1; run header script */</script>
+    <!-- header is ready to be used -->
+</html>
+```
+
+Milla closes the stream.
 
 # Installation
 
@@ -22,6 +81,72 @@ Using yarn
 yarn add milla
 ```
 
+___
+
 # Usage
 
-Soon...
+*You can check out demo folder*
+
+## Page File
+
+First of all, you should create a page html file.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Milla Title</title>
+    <milla-head></milla-head>
+</head>
+<body>
+    <fragment name="header" js="../test/dependencies/8.js" css="../test/dependencies/8.css"></fragment>
+    <div>Middle Content</div>
+    <fragment name="product" js="../test/dependencies/8_1.js"></fragment>
+</body>
+</html>
+```
+
+
+```javascript
+    const Milla = require('../src');
+
+    /* Optional, you can find default configs under src/configuration */
+    Milla.config.set({
+      minifyJs: false,
+      minifyCss: false,
+      minifyHtml: false
+    });
+
+    /* Create express route */
+    app.get('/', Milla.express({
+      htmlFile: path.join(__dirname, '../test/html/test8.html'), //Html with fragments
+      data: { //fragment datas. You can use () => {}, {}, () => new Promise. Milla will handle them in most efficient way.
+        header: (req) => {
+          return {
+            header: {
+              menu: ['Item 1', 'Item 2', 'Item 3']
+            }
+          }
+        },
+        product: (req) => {
+          return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve({product:{name:'Test'}});
+            }, 4000 * Math.random())
+          });
+        }
+      },
+      fragments: { //How you fragments will be rendered. (input) is coming from data. You can use your favorite template engine here.
+        header: {
+          content: (input) => JSON.stringify(input)
+        },
+        product: {
+          placeholder: () => '<div>Product placeholder</div>',
+          content: (input) => {
+            return JSON.stringify(input);
+          }
+        }
+      }
+    }));
+```

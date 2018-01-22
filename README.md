@@ -2,8 +2,6 @@
 [![codecov](https://codecov.io/gh/Acanguven/Milla/branch/master/graph/badge.svg)](https://codecov.io/gh/Acanguven/Milla)
 [![npm version](https://badge.fury.io/js/milla.svg)](https://www.npmjs.com/package/milla)
 
-##### This project is under development
-
 ___
 
 # Milla - Streaming Layout Service
@@ -11,6 +9,10 @@ ___
 Milla is a layout service that generates web pages from asynchronous fragments. It is a friendly and **fast** library that helps you optimizing your web pages with progressive rendering. Milla has built-in integration with ExpressJs.
 
 ![Milla Progressive Rendering](https://i.imgur.com/9TEIFCJ.gif)
+
+## Contributions
+
+**Pull requests are welcome!**
 
 ## Fragments
 

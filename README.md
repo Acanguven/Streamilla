@@ -55,9 +55,9 @@ Converted:
         <style>/* Fragment styles */</style>
         <script>/*Really small milla js. 118bytes*/</script>
     </head>
-    <div id="p_0"></div>
+    <div id="p_0">Header placeholder</div>
     <div>A static content</div>
-    <div id="p_1"></div>
+    <div id="p_1">Product placeholder</div>
     <!-- User started load html dependencies, css files etc and your website is already rendered -->
     ... 140ms
     <!-- Milla recieved product data and flushed product content and js -->

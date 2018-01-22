@@ -334,6 +334,38 @@ describe('Page', () => {
       done();
     };
 
-    expect(page.stream(writeHandler, () => {}));
+    expect(page.stream({},writeHandler, () => {}));
+  });
+
+
+  it('should create placeholders for async data', function (done) {
+    Milla.config.set({
+      fragmentTag: 'fragment',
+    });
+
+    const page = new MillaPage({
+      htmlFile: path.join(__dirname, './html/test8.html'),
+      data: {
+        header: () => {},
+        product: () => {}
+      },
+      fragments: {
+        header: {
+          placeholder: () => '',
+          content: (input) => `test:${input.test}`
+        },
+        product: {
+          placeholder: () => '',
+          content: () => ''
+        }
+      }
+    });
+
+    const writeHandler = (data) => {
+      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body><div id="c_0"><div>Example of placeholder content</div></div><div>Middle Content</div><div id="c_1"><div>Example of placeholder content</div></div><script>function __f__header(){console.log("I am alive");};</script></body></html>');
+      done();
+    };
+
+    expect(page.stream({},writeHandler, () => {}));
   });
 });

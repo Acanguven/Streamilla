@@ -107,7 +107,6 @@ const generateMillaBody = (fragments, dependencies) => {
 const generateFragmentsFirstContent = (firstFlush, pageContents, dependencies) => {
   let fragmentsReplacedFirstFlush = firstFlush;
 
-
   pageContents.fragments.forEach(fragment => {
     if (typeof pageContents.data[fragment.name] === 'object') {
       const contentRender = pageContents.fragmentMethods[fragment.name].content(pageContents.data[fragment.name]);
@@ -120,7 +119,6 @@ const generateFragmentsFirstContent = (firstFlush, pageContents, dependencies) =
       fragmentsReplacedFirstFlush = fragmentsReplacedFirstFlush.replace(fragment.expression, `<div id="${config.placeholderIdPrefix + fragment.index}">${placeholder}</div>`);
     }
   });
-
 
   return fragmentsReplacedFirstFlush;
 };
@@ -232,7 +230,7 @@ class MillaPage {
     });
   }
 
-  stream(writeCallback, endCallback) {
+  stream(input, writeCallback, endCallback) {
     writeCallback(this.pageContent.firstFlush);
   }
 }

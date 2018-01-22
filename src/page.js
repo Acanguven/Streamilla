@@ -146,18 +146,11 @@ class MillaPage {
       Object.values(ENUMS.KNOWN_DEPENDENCY_EXTENSIONS).forEach(fileType => {
         if(!fragment[fileType]) return;
         const filePath = path.join(__dirname, fragment[fileType]);
-        if(!MillaPage.cachedDependencies[filePath]){
-          MillaPage.cachedDependencies[filePath] = fs.readFileSync(filePath, 'utf8').trim();
-          this.dependencies[filePath] =  {
-            code: MillaPage.cachedDependencies[filePath],
-            type: fileType
-          };
-        }else{
-          this.dependencies[filePath] =  {
-            code: MillaPage.cachedDependencies[filePath],
-            type: fileType
-          };
-        }
+        const dependencySource = MillaPage.cachedDependencies[filePath] || fs.readFileSync(filePath, 'utf8').trim();
+        this.dependencies[filePath] =  {
+          code: dependencySource,
+          type: fileType
+        };
       })
     });
   }

@@ -10,7 +10,7 @@ ___
 
 Milla is a layout service that generates web pages from asynchronous fragments. It is a friendly and **fast** library that helps you optimizing your web pages with progressive rendering. Milla has built-in integration with ExpressJs.
 
-![Milla Progressive Rendering](https://i.imgur.com/9TEIFCJ.gifv)
+![Milla Progressive Rendering](https://i.imgur.com/9TEIFCJ.gif)
 
 ## Fragments
 

@@ -33,7 +33,7 @@ Milla shows placeholders on the clients browser while it fetches your data then 
 
 *This is not a valid Milla usage, please see usage details below*
 
-Whenever user provides a html to milla, milla converts it to stream friendly format at flushed to user asynchronously.
+Whenever user provides a html to milla, milla converts it to stream friendly format at flushes to user asynchronously.
 
 Lets assume that our header service responds in 300 ms and product service in 140ms.
 
@@ -58,6 +58,7 @@ Converted:
     <div id="p_0"></div>
     <div>A static content</div>
     <div id="p_1"></div>
+    <!-- User started load html dependencies, css files etc and your website is already rendered -->
     ... 140ms
     <!-- Milla recieved product data and flushed product content and js -->
     <div id="c_1" hidden></div>

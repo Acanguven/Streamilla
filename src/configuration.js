@@ -5,7 +5,6 @@ const DEFAULT_CONFIGURATION = {
   contentIdPrefix: 'p_',
   hideAttribute: 'p',
   headTag: 'milla-head',
-  bodyTag: 'milla-body',
   minifyJs: true,
   minifyCss: true,
   minifyHtml: true

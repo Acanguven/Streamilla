@@ -83,7 +83,7 @@ describe('Page', () => {
       }
     });
 
-    expect(page.pageContent.fragmentedHtml).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}{__milla-body}</body></html>');
+    expect(page.pageContent.fragmentedHtml).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}</body></html>');
   });
 
   it('should create first flush string with multiple fragments', () => {
@@ -109,7 +109,7 @@ describe('Page', () => {
       }
     });
 
-    expect(page.pageContent.fragmentedHtml).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}<div>Middle Content</div>{__fp|1}{__milla-body}</body></html>');
+    expect(page.pageContent.fragmentedHtml).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}<div>Middle Content</div>{__fp|1}</body></html>');
   });
 
   it('should create first flush string with multiple fragments with different level', () => {
@@ -135,7 +135,7 @@ describe('Page', () => {
       }
     });
 
-    expect(page.pageContent.fragmentedHtml).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}<div>Middle Content</div><div><span>{__fp|1}</span></div>{__milla-body}</body></html>');
+    expect(page.pageContent.fragmentedHtml).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title>{__milla-head}</head><body><div>Some Content</div>{__fp|0}<div>Middle Content</div><div><span>{__fp|1}</span></div></body></html>');
   });
 
   it('should capture fragments and attributes', () => {
@@ -161,11 +161,18 @@ describe('Page', () => {
       }
     });
 
-    expect(page.pageContent.fragments).to.deep.equal([{name: 'header', expression: '{__fp|0}', index: 0}, {
-      name: 'menu',
-      expression: '{__fp|1}',
-      index: 1
-    }]);
+    expect(page.pageContent.fragments).to.deep.equal([
+      {
+        name: 'header',
+        expression: '{__fp|0}',
+        index: 0,
+        placeholderGenerator: true
+      }, {
+        name: 'menu',
+        expression: '{__fp|1}',
+        index: 1, placeholderGenerator: true
+      }
+    ]);
   });
 
   it('should store data items', () => {
@@ -270,13 +277,13 @@ describe('Page', () => {
         type: 'css',
       },
       [path.join(__dirname, '../test/dependencies/8.js')]: {
-        code: 'console.log("I am alive");',
+        code: 'console.log("Header is alive and working");',
         type: 'js'
       },
-      [path.join(__dirname, '../test/dependencies/8.html')]: {
-        code: '<div>Example of placeholder content</div>',
-        type: 'placeholder'
-      },
+      [path.join(__dirname, '../test/dependencies/8_1.js')]: {
+        code: 'console.log("Product is alive too!");',
+        type: 'js'
+      }
     });
   });
 
@@ -306,7 +313,7 @@ describe('Page', () => {
     expect(page.stream).to.be.a('function');
   });
 
-  it('should flush first content with static content', function (done) {
+  it('should end with single flush because of static contents', function (done) {
     Milla.config.set({
       fragmentTag: 'fragment',
     });
@@ -315,30 +322,34 @@ describe('Page', () => {
       htmlFile: path.join(__dirname, './html/test8.html'),
       data: {
         header: {test: 4},
-        product: () => {}
+        product: () => {
+        }
       },
       fragments: {
         header: {
-          placeholder: () => '',
+          placeholder: () => '<div>Header placeholder</div>',
           content: (input) => `test:${input.test}`
         },
         product: {
-          placeholder: () => '',
+          placeholder: () => '<div>Product placeholder</div>',
           content: () => ''
         }
       }
     });
 
-    const writeHandler = (data) => {
-      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body>test:4<div>Middle Content</div><div id="c_1"><div>Example of placeholder content</div></div><script>function _f_0(){console.log("I am alive");};</script></body></html>');
+    const endHandler = (data) => {
+      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body>test:4<script>console.log("Header is alive and working");</script><div>Middle Content</div>{__fp|1}</body></html>');
       done();
     };
 
-    expect(page.stream({},writeHandler, () => {}));
+    expect(page.stream({}, () => {
+    }, endHandler));
   });
 
 
-  it('should create placeholders for async data', function (done) {
+  it('should end stream in 2 flushes', function (done) {
+    this.timeout(5000);
+
     Milla.config.set({
       fragmentTag: 'fragment',
     });
@@ -346,26 +357,38 @@ describe('Page', () => {
     const page = new MillaPage({
       htmlFile: path.join(__dirname, './html/test8.html'),
       data: {
-        header: () => {},
-        product: () => {}
+        header: () => {
+        },
+        product: () => {
+          return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve({product: {name: 'Test'}});
+            }, 4000 * Math.random())
+          });
+        }
       },
       fragments: {
         header: {
-          placeholder: () => '',
           content: (input) => `test:${input.test}`
         },
         product: {
-          placeholder: () => '',
-          content: () => ''
+          placeholder: () => '<div>Product placeholder</div>',
+          content: (input) => {
+            return JSON.stringify(input);
+          }
         }
       }
     });
 
     const writeHandler = (data) => {
-      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body><div id="c_0"><div>Example of placeholder content</div></div><div>Middle Content</div><div id="c_1"><div>Example of placeholder content</div></div><script>function _f_0(){console.log("I am alive");};</script></body></html>');
+      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body>{__fp|0}<div>Middle Content</div><div id="c_1"><div>Product placeholder</div></div>');
+    };
+
+    const endHandler = (data) => {
+      expect(data).to.equal('<div id="p_1" p>{"product":{"name":"Test"}}</div><script>$p(\'c_1\',\'p_1\');console.log("Product is alive too!");</script></body></html>');
       done();
     };
 
-    expect(page.stream({},writeHandler, () => {}));
+    page.stream({}, writeHandler, endHandler);
   });
 });

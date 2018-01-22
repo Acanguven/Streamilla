@@ -58,9 +58,6 @@ const parseHtmlSiblings = (siblings, fragmentLength = 0) => {
           case config.headTag:
             htmlString += `{__milla-head}`;
             break;
-          case config.bodyTag:
-            htmlString += `{__milla-body}`;
-            break;
           default:
             const isSelfClosingTag = isSelfClosing(node.name);
             htmlString += `<${node.name}${createAttributes(node.attribs)}${isSelfClosingTag ? '/' : ''}>`;
@@ -91,19 +88,6 @@ const generateMillaHead = (fragments, dependencies) => {
   return `<script>${contentReplaceScript}</script><style>${fragmentStyles}[${config.hideAttribute}]{display:none;}</style>`;
 };
 
-const generateMillaBody = (fragments, dependencies) => {
-  let fragmentsScript = '';
-
-  fragments.forEach(fragment => {
-    if (fragment.js) {
-      const dependencyCode = dependencies[path.join(__dirname, fragment.js)].code;
-      fragmentsScript += `function _f_${fragment.index}(){${dependencyCode}};`;
-    }
-  });
-
-  return `<script>${fragmentsScript}</script>`
-};
-
 const generateFragmentsFirstContent = (firstFlush, pageContents, dependencies) => {
   let fragmentsReplacedFirstFlush = firstFlush;
 
@@ -113,14 +97,27 @@ const generateFragmentsFirstContent = (firstFlush, pageContents, dependencies) =
       if (typeof contentRender !== 'string') {
         throw ENUMS.ERRORS.EXPECTED_SYNC_RENDER_FOR_STATIC_DATA(fragment.name);
       }
-      fragmentsReplacedFirstFlush = fragmentsReplacedFirstFlush.replace(fragment.expression, `${contentRender}`);
+      fragment.static = true;
+      fragmentsReplacedFirstFlush = fragmentsReplacedFirstFlush.replace(fragment.expression, `${contentRender}${fragment.js ? '<script>' + dependencies[path.join(__dirname, fragment.js)].code + '</script>' : ''}`);
+
     } else {
-      const placeholder = fragment.placeholder ? dependencies[path.join(__dirname, fragment.placeholder)].code : '';
-      fragmentsReplacedFirstFlush = fragmentsReplacedFirstFlush.replace(fragment.expression, `<div id="${config.placeholderIdPrefix + fragment.index}">${placeholder}</div>`);
+      const placeholderMethod = pageContents.fragmentMethods[fragment.name].placeholder;
+      if (placeholderMethod) {
+        if (typeof placeholderMethod === 'string') {
+          const placeholderContainer = `<div id="${config.placeholderIdPrefix + fragment.index}">${placeholderMethod}</div>`;
+          fragmentsReplacedFirstFlush = fragmentsReplacedFirstFlush.replace(fragment.expression, placeholderContainer);
+        } else if (typeof placeholderMethod === 'function') {
+          fragment.placeholderGenerator = true;
+        }
+      }
     }
   });
 
   return fragmentsReplacedFirstFlush;
+};
+
+const contentReplacerGenerator = (i, content, fragment, dependencies) => {
+  return `<div id="${config.contentIdPrefix + i}" ${config.hideAttribute}>${content}</div><script>$p('${config.placeholderIdPrefix + i}','${config.contentIdPrefix + i}');${fragment.js ? `${dependencies[path.join(__dirname, fragment.js)].code}` : ''}</script>`
 };
 
 class MillaPage {
@@ -132,6 +129,7 @@ class MillaPage {
       fragments: [],
       fragmentMethods: {},
       data: {},
+      lastFlush: ''
     };
     this.dependencies = {};
 
@@ -189,8 +187,9 @@ class MillaPage {
   buildFirstFlush() {
     let firstFlushContent = this.pageContent.fragmentedHtml;
     firstFlushContent = firstFlushContent.replace('{__milla-head}', generateMillaHead(this.pageContent, this.dependencies));
-    firstFlushContent = firstFlushContent.replace('{__milla-body}', generateMillaBody(this.pageContent.fragments, this.dependencies));
-    this.pageContent.firstFlush = generateFragmentsFirstContent(firstFlushContent, this.pageContent, this.dependencies);
+    firstFlushContent = generateFragmentsFirstContent(firstFlushContent, this.pageContent, this.dependencies);
+    this.pageContent.lastFlush = '</body></html>';
+    this.pageContent.firstFlush = firstFlushContent.replace(this.pageContent.lastFlush, '');
   }
 
   loadDependencies() {
@@ -230,9 +229,38 @@ class MillaPage {
     });
   }
 
-  stream(request, writeCallback, endCallback) {
-    writeCallback(this.pageContent.firstFlush);
-    endCallback();
+  stream(req, writeCallback, endCallback) {
+    let firstFlush = this.pageContent.firstFlush;
+    let promiseCount = 0;
+    this.pageContent.fragments.forEach(fragment => {
+      if (!fragment.static) {
+        const fragmentDataResolver = this.pageContent.data[fragment.name](req);
+
+        if (fragmentDataResolver instanceof Promise) {
+          promiseCount++;
+          if (fragment.placeholderGenerator) {
+            firstFlush = firstFlush.replace(fragment.expression, `<div id="${config.placeholderIdPrefix + fragment.index}">${this.pageContent.fragmentMethods[fragment.name].placeholder(req)}</div>`)
+          }
+          fragmentDataResolver.then((data) => {
+            promiseCount--;
+            if (promiseCount === 0) {
+              endCallback(contentReplacerGenerator(fragment.index, this.pageContent.fragmentMethods[fragment.name].content(data), fragment, this.dependencies) + this.pageContent.lastFlush);
+            } else {
+              writeCallback(contentReplacerGenerator(fragment.index, this.pageContent.fragmentMethods[fragment.name].content(data), fragment, this.dependencies));
+            }
+          });
+        } else if (typeof fragmentDataResolver === 'object' || typeof fragmentDataResolver === 'string') {
+          const replaceContent = this.pageContent.fragmentMethods[fragment.name].content(fragmentDataResolver);
+          firstFlush = firstFlush.replace(fragment.expression, replaceContent + (fragment.js ? `<script>${this.dependencies[path.join(__dirname, fragment.js)].code}</script>` : ''));
+        }
+      }
+    });
+
+    if (promiseCount === 0) {
+      endCallback(firstFlush + this.pageContent.lastFlush);
+    } else {
+      writeCallback(firstFlush);
+    }
   }
 }
 

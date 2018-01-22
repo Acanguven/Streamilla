@@ -9,22 +9,34 @@ Milla.config.set({
   minifyHtml: false
 });
 
+
 app.get('/', Milla.express({
   htmlFile: path.join(__dirname, '../test/html/test8.html'),
   data: {
-    header: () => {
+    header: (req) => {
+      return {
+        header: {
+          menu: ['Item 1', 'Item 2', 'Item 3']
+        }
+      }
     },
-    product: () => {
+    product: (req) => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve({product:{name:'Test'}});
+        }, 4000 * Math.random())
+      });
     }
   },
   fragments: {
     header: {
-      placeholder: () => '',
-      content: (input) => `test:${input.test}`
+      content: (input) => JSON.stringify(input)
     },
     product: {
-      placeholder: () => '',
-      content: () => ''
+      placeholder: () => '<div>Product placeholder</div>',
+      content: (input) => {
+        return JSON.stringify(input);
+      }
     }
   }
 }));

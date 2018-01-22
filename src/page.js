@@ -97,7 +97,7 @@ const generateMillaBody = (fragments, dependencies) => {
   fragments.forEach(fragment => {
     if (fragment.js) {
       const dependencyCode = dependencies[path.join(__dirname, fragment.js)].code;
-      fragmentsScript += `function __f__${fragment.name}(){${dependencyCode}};`;
+      fragmentsScript += `function _f_${fragment.index}(){${dependencyCode}};`;
     }
   });
 
@@ -230,8 +230,9 @@ class MillaPage {
     });
   }
 
-  stream(input, writeCallback, endCallback) {
+  stream(request, writeCallback, endCallback) {
     writeCallback(this.pageContent.firstFlush);
+    endCallback();
   }
 }
 

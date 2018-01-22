@@ -330,7 +330,7 @@ describe('Page', () => {
     });
 
     const writeHandler = (data) => {
-      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body>test:4<div>Middle Content</div><div id="c_1"><div>Example of placeholder content</div></div><script>function __f__header(){console.log("I am alive");};</script></body></html>');
+      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body>test:4<div>Middle Content</div><div id="c_1"><div>Example of placeholder content</div></div><script>function _f_0(){console.log("I am alive");};</script></body></html>');
       done();
     };
 
@@ -362,7 +362,7 @@ describe('Page', () => {
     });
 
     const writeHandler = (data) => {
-      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body><div id="c_0"><div>Example of placeholder content</div></div><div>Middle Content</div><div id="c_1"><div>Example of placeholder content</div></div><script>function __f__header(){console.log("I am alive");};</script></body></html>');
+      expect(data).to.equal('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Milla Title</title><script>function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}</script><style>.test{color:red}[p]{display:none;}</style></head><body><div id="c_0"><div>Example of placeholder content</div></div><div>Middle Content</div><div id="c_1"><div>Example of placeholder content</div></div><script>function _f_0(){console.log("I am alive");};</script></body></html>');
       done();
     };
 

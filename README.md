@@ -22,10 +22,10 @@ We create component because of their reusabilities. We can use them anywhere we 
 But fragments are encapsulated modules with specific business. Like an header, product container, footer.
 They are all independent from each other.
 
-### How Milla approaches fragments?
+### How Milla approaches to fragments?
 
 Milla is designed to stream fragments asynchronously to the clients. Without any single XHR from browser, all fragments are delivered to clients when their data is ready. Like single page application but fully server side rendered. So it makes it SEO friendly and great for e-commerce websites.
-Milla shows placeholders on the clients browser while it fetches your data then replaces placeholder with real content.
+Milla shows placeholders on the clients browser while it fetches your data then replaces placeholder with real content. So it is really improving your **time to first byte**
 
 **You can easily improve your Speed Index**!
 

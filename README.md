@@ -33,7 +33,7 @@ Milla shows placeholders on the clients browser while it fetches your data then 
 
 *This is not a valid Milla usage, please see usage details below*
 
-Whenever user provides a html to milla, milla converts it to stream friendly format at flushes to user asynchronously.
+Whenever user provides a html to milla, milla converts it to stream friendly format amd flushes to user asynchronously.
 
 Lets assume that our header service responds in 300 ms and product service in 140ms.
 

@@ -6,8 +6,9 @@ const DEFAULT_CONFIGURATION = {
   hideAttribute: 'p',
   headTag: 'milla-head',
   bodyTag: 'milla-body',
-  minifyJs: true, //not supported, yet.
-  minifyCss: true //not supported, yet.
+  minifyJs: true,
+  minifyCss: true,
+  minifyHtml: true
 };
 
 class Configuration {

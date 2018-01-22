@@ -111,7 +111,7 @@ describe('Page', () => {
       htmlFile: path.join(__dirname, './html/test5.html'),
     });
 
-    expect(page.pageContent.fragments).to.deep.equal([{name: 'header'}, {name: 'menu'}]);
+    expect(page.pageContent.fragments).to.deep.equal([{name: 'header', expression: '{__fp|0}',  index: 0}, {name: 'menu', expression: '{__fp|1}', index: 1}]);
   });
 
   it('should store data items', () => {
@@ -129,6 +129,12 @@ describe('Page', () => {
         header: {test: 5},
         menu: staticResolver,
         product: productResolver
+      },
+      fragment:{
+        header: {
+          content: '',
+          placeholder: ''
+        }
       }
     });
 
@@ -169,8 +175,12 @@ describe('Page', () => {
         type: 'css',
       },
       [path.join(__dirname, '../test/dependencies/7.js')]: {
-        code: 'console.log(\'I am alive\');',
+        code: 'console.log("I am alive");',
         type: 'js'
+      },
+      [path.join(__dirname, '../test/dependencies/7.html')]: {
+        code: '<div>Example of placeholder content</div>',
+        type: 'placeholder'
       },
     });
   });

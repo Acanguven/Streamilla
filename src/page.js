@@ -3,6 +3,9 @@ const htmlparser2 = require('htmlparser2');
 const ENUMS = require('./enums');
 const fs = require('fs');
 const path = require('path');
+const htmlminify = require('html-minifier').minify;
+const crass = require('crass');
+const UglifyJS = require("uglify-js");
 
 /**
  * Page Configuration
@@ -10,6 +13,8 @@ const path = require('path');
  * html {string} - html file as string
  * data {object} - component resolvers: {} | () => {} | () => new Promise()
  */
+
+const contentReplaceScript = 'function $p(p,c){var c = document.getElementById(c),r = c.innerHTML;c.remove();document.getElementById(p).innerHTML=r}';
 
 const isEmpty = (s) => {
   return s.trim() === '';
@@ -26,11 +31,13 @@ const createAttributes = attributesObject => {
   }, '');
 };
 
-const createFragmentObject = fragmentNode => {
+const createFragmentObject = (fragmentNode, expression, index) => {
   const fragmentObject = {};
   for (let prop in fragmentNode.attribs) {
     fragmentObject[prop] = fragmentNode.attribs[prop];
   }
+  fragmentObject.expression = expression;
+  fragmentObject.index = index;
   return fragmentObject;
 };
 
@@ -44,8 +51,8 @@ const parseHtmlSiblings = (siblings, fragmentLength = 0) => {
       case ENUMS.HTML_ELEMENT_TYPES.TAG:
         switch (node.name) {
           case config.fragmentTag:
-            const fragmentExpression = `{__fp|${fragmentLength++}}`;
-            fragments.push(createFragmentObject(node, fragmentExpression));
+            const fragmentExpression = `{__fp|${fragmentLength}}`;
+            fragments.push(createFragmentObject(node, fragmentExpression, fragmentLength++));
             htmlString += fragmentExpression;
             break;
           case config.headTag:
@@ -57,7 +64,7 @@ const parseHtmlSiblings = (siblings, fragmentLength = 0) => {
           default:
             const isSelfClosingTag = isSelfClosing(node.name);
             htmlString += `<${node.name}${createAttributes(node.attribs)}${isSelfClosingTag ? '/' : ''}>`;
-            if (node.children){
+            if (node.children) {
               const childrenData = parseHtmlSiblings(node.children, fragmentLength);
               htmlString += childrenData[0];
               fragments = fragments.concat(childrenData[1]);
@@ -76,6 +83,34 @@ const parseHtmlSiblings = (siblings, fragmentLength = 0) => {
   }
 
   return [htmlString, fragments];
+};
+
+const generateMillaHead = (fragments, dependencies) => {
+  const fragmentStyles = Object.values(dependencies).filter(dep => dep.type === ENUMS.KNOWN_DEPENDENCY_EXTENSIONS.CSS).map(dep => dep.code).join('');
+
+  return `<script>${contentReplaceScript}</script><style>${fragmentStyles}[${config.hideAttribute}]{display:none;}</style>`;
+};
+
+const generateMillaBody = (fragments, dependencies) => {
+  let fragmentsScript = '';
+
+  fragments.forEach(fragment => {
+    if (fragment.js) {
+      const dependencyCode = dependencies[path.join(__dirname, fragment.js)].code;
+      fragmentsScript += `function __f__${fragment.name}(){${dependencyCode}};`;
+    }
+  });
+
+  return `<script>${fragmentsScript}</script>`
+};
+
+const generateFragmentsFirstContent = (firstFlush, pageContents, dependencies) => {
+  let fragmentsReplacedFirstFlush = firstFlush;
+  pageContents.fragments.forEach(fragment => {
+    const placeholder = fragment.placeholder ? dependencies[path.join(__dirname, fragment.placeholder)].code : '';
+    fragmentsReplacedFirstFlush = fragmentsReplacedFirstFlush.replace(fragment.expression, `<div id="${config.placeholderIdPrefix + fragment.index}">${placeholder}</div>`);
+  });
+  return fragmentsReplacedFirstFlush;
 };
 
 class MillaPage {
@@ -116,7 +151,7 @@ class MillaPage {
     /**
      * Set page data
      */
-    if(pageConfiguration.data){
+    if (pageConfiguration.data) {
       this.pageContent.data = pageConfiguration.data;
     }
   }
@@ -129,7 +164,6 @@ class MillaPage {
     }
   }
 
-
   parseHtml() {
     const htmlDomTree = htmlparser2.parseDOM(this.html);
     const htmlData = parseHtmlSiblings(htmlDomTree);
@@ -138,16 +172,38 @@ class MillaPage {
   }
 
   buildFirstFlush() {
-
+    let firstFlushContent = this.pageContent.fragmentedHtml;
+    firstFlushContent = firstFlushContent.replace('{__milla-head}', generateMillaHead(this.pageContent, this.dependencies));
+    firstFlushContent = firstFlushContent.replace('{__milla-body}', generateMillaBody(this.pageContent.fragments, this.dependencies));
+    this.pageContent.firstFlush = generateFragmentsFirstContent(firstFlushContent, this.pageContent, this.dependencies);
   }
 
   loadDependencies() {
     this.pageContent.fragments.forEach(fragment => {
       Object.values(ENUMS.KNOWN_DEPENDENCY_EXTENSIONS).forEach(fileType => {
-        if(!fragment[fileType]) return;
+        if (!fragment[fileType]) return;
         const filePath = path.join(__dirname, fragment[fileType]);
-        const dependencySource = MillaPage.cachedDependencies[filePath] || fs.readFileSync(filePath, 'utf8').trim();
-        this.dependencies[filePath] =  {
+        let dependencySource = MillaPage.cachedDependencies[filePath] || fs.readFileSync(filePath, 'utf8').trim();
+        switch (fileType) {
+          case ENUMS.KNOWN_DEPENDENCY_EXTENSIONS.PLACEHOLDER:
+            if (config.minifyHtml) {
+              dependencySource = htmlminify(dependencySource, {
+                collapseWhitespace: true
+              });
+            }
+            break;
+          case ENUMS.KNOWN_DEPENDENCY_EXTENSIONS.CSS:
+            if (config.minifyCss) {
+              dependencySource = crass.parse(dependencySource).optimize().toString();
+            }
+            break;
+          case ENUMS.KNOWN_DEPENDENCY_EXTENSIONS.JS:
+            if (config.minifyJs) {
+              dependencySource = UglifyJS.minify(dependencySource).code;
+            }
+            break;
+        }
+        this.dependencies[filePath] = {
           code: dependencySource,
           type: fileType
         };

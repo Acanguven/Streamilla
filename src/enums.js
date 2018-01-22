@@ -12,5 +12,6 @@ module.exports.HTML_ELEMENT_TYPES = {
 
 module.exports.KNOWN_DEPENDENCY_EXTENSIONS = {
   CSS: 'css',
-  JS: 'js'
+  JS: 'js',
+  PLACEHOLDER: 'placeholder'
 };

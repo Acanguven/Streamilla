@@ -145,7 +145,7 @@ Then use your page file in your express route.
           });
         }
       },
-      fragments: { //How you fragments will be rendered. (input) is coming from data. You can use your favorite template engine here.
+      fragments: { //Fragment rendering functions. (input) is coming from data. You can use your favorite template engine here (anything that returns string).
         header: {
           content: (input) => JSON.stringify(input)
         },

@@ -10,6 +10,8 @@ ___
 
 Milla is a layout service that generates web pages from asynchronous fragments. It is a friendly and **fast** library that helps you optimizing your web pages with progressive rendering. Milla has built-in integration with ExpressJs.
 
+![Milla Progressive Rendering](https://i.imgur.com/9TEIFCJ.gifv)
+
 ## Fragments
 
 ### What is fragment and what makes it different from components?
@@ -107,6 +109,9 @@ First of all, you should create a page html file.
 </html>
 ```
 
+Then use your page file in your express route.
+
+## Express Route
 
 ```javascript
     const Milla = require('../src');
@@ -150,3 +155,5 @@ First of all, you should create a page html file.
       }
     }));
 ```
+
+Thats all! You have a great progressive rendering now.

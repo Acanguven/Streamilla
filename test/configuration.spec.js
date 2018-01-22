@@ -7,7 +7,7 @@ describe('Configuration', () => {
   });
 
   it('should have default options', () => {
-    expect(MillaConfiguration.fragment_tag).to.be.an('string');
+    expect(MillaConfiguration.fragmentTag).to.be.an('string');
   });
 
   it('should have set method to update configuration', () => {
@@ -16,8 +16,8 @@ describe('Configuration', () => {
 
   it('should have update configuration', () => {
     MillaConfiguration.set({
-      fragment_tag: 'fragment_test'
+      fragmentTag: 'fragment_test'
     });
-    expect(MillaConfiguration.fragment_tag).to.be.eq('fragment_test');
+    expect(MillaConfiguration.fragmentTag).to.be.eq('fragment_test');
   });
 });

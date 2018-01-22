@@ -57,20 +57,22 @@ Converted:
         <style>/* Fragment styles */</style>
         <script>/*Really small milla js. 118bytes*/</script>
     </head>
-    <div id="p_0">Header placeholder</div>
-    <div>A static content</div>
-    <div id="p_1">Product placeholder</div>
-    <!-- User started load html dependencies, css files etc and your website is already rendered -->
-    ... 140ms
-    <!-- Milla recieved product data and flushed product content and js -->
-    <div id="c_1" hidden></div>
-    <script>/*use head script to change c_1 p_1; run header script */</script>
-    <!-- Product is ready to be used -->
-    ... 160ms
-    <!-- Milla recieved header data and flushed product content and js -->
-    <div id="c_1" hidden></div>
-    <script>/*use head script to change c_1 p_1; run header script */</script>
-    <!-- header is ready to be used -->
+    <body>
+        <div id="p_0">Header placeholder</div>
+        <div>A static content</div>
+        <div id="p_1">Product placeholder</div>
+        <!-- User started load html dependencies, css files etc and your website is already rendered -->
+        ... 140ms
+        <!-- Milla recieved product data and flushed product content and js -->
+        <div id="c_1" hidden></div>
+        <script>/*use head script to change c_1 p_1; run header script */</script>
+        <!-- Product is ready to be used -->
+        ... 160ms
+        <!-- Milla recieved header data and flushed product content and js -->
+        <div id="c_1" hidden></div>
+        <script>/*use head script to change c_1 p_1; run header script */</script>
+        <!-- header is ready to be used -->
+    </body>
 </html>
 ```
 

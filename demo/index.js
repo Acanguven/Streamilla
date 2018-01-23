@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const Milla = require('../src');
 const path = require('path');
+const hbs = require('handlebars');
 
 Milla.config.set({
   minifyJs: false,
@@ -9,16 +10,25 @@ Milla.config.set({
   minifyHtml: false
 });
 
+const renderList = hbs.compile(`
+  <ul class="test">
+    {{#each array}}
+      <li>{{this}}</li>
+    {{/each}} 
+  </ul>
+`);
 
 app.get('/', Milla.express({
   htmlFile: path.join(__dirname, '../test/html/test8.html'),
   data: {
     header: (req) => {
-      return {
-        header: {
-          menu: ['Item 1', 'Item 2', 'Item 3']
-        }
-      }
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve({
+            menu: ['Item 1', 'Item 2', 'Item 3']
+          });
+        }, 4000 * Math.random())
+      });
     },
     product: (req) => {
       return new Promise((resolve, reject) => {
@@ -30,7 +40,12 @@ app.get('/', Milla.express({
   },
   fragments: {
     header: {
-      content: (input) => JSON.stringify(input)
+      content: (data) => {
+        return renderList({
+          array: data.menu
+        })
+      },
+      placeholder: () => '<div>List Loading...</div>'
     },
     product: {
       placeholder: () => '<div>Product placeholder</div>',

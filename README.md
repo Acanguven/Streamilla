@@ -1,14 +1,14 @@
-[![Build Status](https://travis-ci.org/Acanguven/TyStream.svg?branch=master)](https://travis-ci.org/Acanguven/milla)
-[![codecov](https://codecov.io/gh/Acanguven/TyStream/branch/master/graph/badge.svg)](https://codecov.io/gh/Acanguven/milla)
-[![npm version](https://badge.fury.io/js/TyStream.svg)](https://www.npmjs.com/package/milla)
-[![Known Vulnerabilities](https://snyk.io/test/github/Acanguven/TyStream/badge.svg)](https://snyk.io/test/github/Acanguven/milla)
+[![Build Status](https://travis-ci.org/Acanguven/TyStream.svg?branch=master)](https://travis-ci.org/Acanguven/Milla)
+[![codecov](https://codecov.io/gh/Acanguven/TyStream/branch/master/graph/badge.svg)](https://codecov.io/gh/Acanguven/Milla)
+[![npm version](https://badge.fury.io/js/TyStream.svg)](https://www.npmjs.com/package/Milla)
+[![Known Vulnerabilities](https://snyk.io/test/github/Acanguven/TyStream/badge.svg)](https://snyk.io/test/github/Acanguven/Milla)
 ___
 
 # TyStream - Streaming Layout Service
 
 TyStream is a layout service that generates web pages from asynchronous fragments. It is a friendly and **fast** library that helps you optimizing your web pages with progressive rendering. TyStream has built-in integration with [ExpressJs](https://expressjs.com/) .
 
-### [Heroku Demo](https://TyStream-stream.herokuapp.com/)
+### [Heroku Demo](https://milla-stream.herokuapp.com/)
 ![TyStream Progressive Rendering](https://i.imgur.com/9TEIFCJ.gif)
 
 ## Contributions
@@ -41,7 +41,7 @@ Lets assume that our header service responds in 300 ms and product service in 14
 ```html
 <html>
     <head>
-        <TyStream-head></TyStream-head>
+        <milla-head></milla-head>
     </head>
     <body>
         <fragment name="header" css="pathtocss" js="pathtojs"></fragment>
@@ -88,7 +88,7 @@ npm install TyStream --save
 
 Using yarn
 ```bash
-yarn add TyStream
+yarn add milla
 ```
 
 ___
@@ -107,7 +107,7 @@ First of all, you should create a page html file.
 <head>
     <meta charset="UTF-8">
     <title>TyStream Title</title>
-    <tystream-head></tystream-head>
+    <milla-head></milla-head>
 </head>
 <body>
     <fragment name="header" js="../test/dependencies/8.js" css="../test/dependencies/8.css"></fragment>
@@ -122,7 +122,7 @@ Then use your page file in your express route.
 ## Express Route
 
 ```javascript
-    const TyStream = require('tystream');
+    const TyStream = require('milla');
 
     /* Optional, you can find default configs under src/configuration */
     TyStream.config.set({

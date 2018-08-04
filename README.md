@@ -1,3 +1,9 @@
+# Project is continued at [PuzzleJs](https://github.com/Acanguven/PuzzleJs)
+
+____
+____
+____
+
 [![Build Status](https://travis-ci.org/Acanguven/TyStream.svg?branch=master)](https://travis-ci.org/Acanguven/Milla)
 [![codecov](https://codecov.io/gh/Acanguven/TyStream/branch/master/graph/badge.svg)](https://codecov.io/gh/Acanguven/Milla)
 [![npm version](https://badge.fury.io/js/TyStream.svg)](https://www.npmjs.com/package/Milla)
